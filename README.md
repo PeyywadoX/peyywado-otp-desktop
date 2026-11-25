@@ -28,6 +28,11 @@ Free code signing provided by [SignPath.io](https://signpath.io), certificate by
 - Only repository maintainers can approve signing requests.
 - No telemetry or personal data is collected or transmitted to third parties.
 
+## İletişim & Çözümler
+
+- Web: [peyywado.com](https://peyywado.com) — Hyper-V Undetected Sanal Bilgisayar Çözümleri
+- WhatsApp: [wa.me/995599891235](https://wa.me/995599891235)
+
 ## Lisans
 
 [MIT](LICENSE)

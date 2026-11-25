@@ -2259,6 +2259,20 @@
       closeTopLayer(document.getElementById('guideDialog'));
       setTimeout(() => openCaptureWizard(), 220);
     });
+
+    document.querySelectorAll('[data-ext-url]').forEach((el) => {
+      el.addEventListener('click', (e) => {
+        e.preventDefault();
+        const url = el.getAttribute('data-ext-url');
+        if (!url) return;
+        SoundFX.click();
+        if (hasTauri) {
+          invoke('open_external_url', { url }).catch(() => {});
+        } else {
+          window.open(url, '_blank', 'noopener,noreferrer');
+        }
+      });
+    });
   }
 
   async function boot() {

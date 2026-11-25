@@ -351,6 +351,36 @@ fn decode_keydown_manual(header_hex: String, data_hex: String) -> Result<otpcore
     otpcore::decode_keydown(&header_hex, &data_hex)
 }
 
+#[tauri::command]
+fn open_external_url(url: String) -> Result<(), String> {
+    if !matches!(
+        url.as_str(),
+        "https://peyywado.com" | "https://peyywado.com/" | "https://wa.me/995599891235"
+    ) {
+        return Err("İzin verilmeyen bağlantı".into());
+    }
+    #[cfg(windows)]
+    {
+        use windows_sys::Win32::UI::Shell::ShellExecuteW;
+        use windows_sys::Win32::UI::WindowsAndMessaging::SW_SHOWNORMAL;
+        let mut op: Vec<u16> = "open".encode_utf16().collect();
+        op.push(0);
+        let mut target: Vec<u16> = url.encode_utf16().collect();
+        target.push(0);
+        unsafe {
+            ShellExecuteW(
+                std::ptr::null_mut(),
+                op.as_ptr(),
+                target.as_ptr(),
+                std::ptr::null(),
+                std::ptr::null(),
+                SW_SHOWNORMAL,
+            );
+        }
+    }
+    Ok(())
+}
+
 #[cfg(all(test, windows))]
 mod tests {
     use super::*;
@@ -731,7 +761,8 @@ fn main() {
             capture_start,
             capture_stop,
             capture_status,
-            decode_keydown_manual
+            decode_keydown_manual,
+            open_external_url
         ])
         .run(tauri::generate_context!());
 

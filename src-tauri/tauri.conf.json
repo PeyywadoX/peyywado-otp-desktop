@@ -1,0 +1,31 @@
+{
+  "$schema": "https://schema.tauri.app/config/2",
+  "productName": "Peyywado OTP",
+  "version": "2.0.0",
+  "identifier": "com.peyywado.otp",
+  "build": {
+    "frontendDist": "../ui"
+  },
+  "app": {
+    "withGlobalTauri": true,
+    "windows": [],
+    "security": {
+      "csp": null
+    }
+  },
+  "bundle": {
+    "active": true,
+    "targets": ["nsis"],
+    "icon": ["icons/icon.ico"],
+    "publisher": "Peyywado",
+    "copyright": "© 2026 Peyywado",
+    "category": "Utility",
+    "shortDescription": "AnyOTP+ masaüstü doğrulayıcı",
+    "longDescription": "Peyywado OTP — AnyOTP+ uyumlu, güvenli masaüstü TOTP doğrulayıcı. Seed'ler cihazda DPAPI ile şifreli saklanır.",
+    "windows": {
+      "nsis": {
+        "installMode": "currentUser"
+      }
+    }
+  }
+}

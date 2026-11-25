@@ -1,0 +1,38 @@
+[package]
+name = "peyywado-otp"
+version = "1.0.0"
+edition = "2021"
+description = "Peyywado OTP — AnyOTP+ masaüstü doğrulayıcı"
+
+[build-dependencies]
+tauri-build = { version = "2", features = [] }
+
+[dependencies]
+tauri = { version = "2", features = [] }
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+otpcore = { path = "../otpcore" }
+rcgen = "0.13"
+rustls = { version = "0.23", default-features = false, features = ["ring", "std", "tls12"] }
+webpki-roots = "0.26"
+base64 = "0.22"
+uuid = { version = "1", features = ["v4"] }
+flate2 = "1.0.35"
+
+[target.'cfg(windows)'.dependencies]
+windows-sys = { version = "0.59", features = [
+    "Win32_Security_Cryptography",
+    "Win32_Foundation",
+    "Win32_UI_WindowsAndMessaging",
+    "Win32_UI_Shell",
+    "Win32_System_Registry",
+    "Win32_System_Threading",
+    "Win32_NetworkManagement_IpHelper",
+    "Win32_NetworkManagement_Ndis",
+    "Win32_Networking_WinSock",
+] }
+
+[profile.release]
+opt-level = "s"
+lto = true
+strip = true

@@ -1,0 +1,850 @@
+<!doctype html>
+<html lang="tr">
+<head>
+<meta charset="utf-8" />
+<meta name="viewport" content="width=device-width,initial-scale=1,maximum-scale=1,user-scalable=no" />
+<title>Peyywado OTP</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@500;600;700;800&family=Plus+Jakarta+Sans:wght@400;500;600;700;800&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="styles.css">
+</head>
+<body>
+<div class="app-shell" id="appShell">
+
+  <header class="titlebar" id="titlebar" data-tauri-drag-region>
+    <div class="tb-left" data-tauri-drag-region>
+      <div class="brand-mark" data-tauri-drag-region>
+        <svg class="brand-logo" viewBox="0 0 48 48" fill="none" aria-hidden="true">
+          <defs>
+            <linearGradient id="pwBrandGrad" x1="4" y1="2" x2="44" y2="46" gradientUnits="userSpaceOnUse">
+              <stop offset="0" stop-color="#fb923c"/>
+              <stop offset="1" stop-color="#ea580c"/>
+            </linearGradient>
+          </defs>
+          <path d="M24 3.5L41 11.8v11.7C41 34 33.5 42.2 24 44.8 14.5 42.2 7 34 7 23.5V11.8L24 3.5z" fill="url(#pwBrandGrad)" fill-opacity=".14" stroke="url(#pwBrandGrad)" stroke-width="2.2"/>
+          <circle cx="24" cy="21" r="6.8" stroke="url(#pwBrandGrad)" stroke-width="2.4"/>
+          <path d="M24 27.8v7.6" stroke="url(#pwBrandGrad)" stroke-width="2.4" stroke-linecap="round"/>
+          <circle cx="24" cy="21" r="2.3" fill="url(#pwBrandGrad)"/>
+        </svg>
+        <div class="brand-title" data-tauri-drag-region>Peyywado <span>OTP</span></div>
+        <span class="ver-chip hide-compact">v2.1</span>
+      </div>
+    </div>
+
+    <div class="tb-right">
+      <div class="tb-tools">
+        <button type="button" class="tb-tool" id="btnPrivacy" title="Gizlilik Modu (P)" aria-label="Gizlilik modu">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M2 12s3.5-7 10-7 10 7 10 7-3.5 7-10 7S2 12 2 12z"/><circle cx="12" cy="12" r="3"/></svg>
+        </button>
+        <button type="button" class="tb-tool hide-compact" id="btnSound" title="Ses efektleri" aria-label="Ses efektleri">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><polygon points="11 5 6 9 2 9 2 15 6 15 11 19 11 5"/><path d="M15.54 8.46a5 5 0 0 1 0 7.07"/><path d="M19.07 4.93a10 10 0 0 1 0 14.14"/></svg>
+        </button>
+        <button type="button" class="tb-tool" id="btnAlwaysTop" title="Her zaman üstte tut" aria-label="Her zaman üstte">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 17v5"/><path d="M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16h14v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6a1 1 0 0 1 1-1h.5a.5.5 0 0 0 .5-.5v-1a.5.5 0 0 0-.5-.5h-9a.5.5 0 0 0-.5.5v1a.5.5 0 0 0 .5.5H8a1 1 0 0 1 1 1z"/></svg>
+        </button>
+        <button type="button" class="tb-tool hide-compact" id="btnMiniMode" title="Mini HUD (Alt+M)" aria-label="Mini mod">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="3"/><rect x="12" y="12" width="6" height="6" rx="1" fill="currentColor" fill-opacity=".28"/></svg>
+        </button>
+        <button type="button" class="tb-tool hide-in-mini" id="btnLockNow" title="Kasayı kilitle (Ctrl+L)" aria-label="Kasayı kilitle" style="display:none">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+        </button>
+        <button type="button" class="tb-tool hide-in-mini" id="btnGuide" title="Rehber & Güvenlik" aria-label="Rehber">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9.8C7.5 20.5 4 17 4 12V7l8-4z"/><path d="M9.5 12.2l1.8 1.8 3.6-3.8"/></svg>
+        </button>
+        <button type="button" class="tb-tool hide-in-mini" id="btnSettings" title="Ayarlar" aria-label="Ayarlar">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 1 1-2.83 2.83l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-4 0v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 1 1-2.83-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1 0-4h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 1 1 2.83-2.83l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 4 0v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 1 1 2.83 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9c.26.6.85 1 1.51 1H21a2 2 0 0 1 0 4h-.09a1.65 1.65 0 0 0-1.51 1z"/></svg>
+        </button>
+      </div>
+      <div class="win-controls" id="winControls">
+        <button type="button" class="win-btn" id="winMin" title="Küçült" aria-label="Küçült">
+          <svg viewBox="0 0 12 12"><path d="M2 6h8" stroke="currentColor" stroke-width="1.3" stroke-linecap="round"/></svg>
+        </button>
+        <button type="button" class="win-btn" id="winMax" title="Büyüt / Geri Yükle" aria-label="Büyüt">
+          <svg viewBox="0 0 12 12" fill="none"><rect x="2.2" y="2.2" width="7.6" height="7.6" rx="1.2" stroke="currentColor" stroke-width="1.2"/></svg>
+        </button>
+        <button type="button" class="win-btn close" id="winClose" title="Kapat" aria-label="Kapat">
+          <svg viewBox="0 0 12 12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.35" stroke-linecap="round"/></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <div class="epoch-rail" aria-hidden="true">
+    <div class="epoch-fill" id="epochFill"></div>
+  </div>
+
+  <div class="status-strip">
+    <button type="button" class="tel-btn" id="statusPill" title="Canlı sistem kontrolü">
+      <span class="pulse-dot" id="statusDot"></span>
+      <span id="statusTxt">Kontrol ediliyor</span>
+    </button>
+    <button type="button" class="tel-btn" id="clockPill" title="Saat senkronizasyonu">
+      <span class="tel-clock" id="liveClock">--:--:--</span>
+      <span class="tel-offset" id="liveOffset">+0.00s</span>
+    </button>
+  </div>
+
+  <section class="workspace-bar" aria-label="Hesap araçları">
+    <div class="bar-primary-row">
+      <button type="button" class="btn btn-primary btn-capture-hero hide-in-mini" id="btnCaptureIphone" title="iPhone AnyOTP+ aktivasyonundan canlı seed yakala">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.1" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 18h.01"/><path d="M9 7h6"/></svg>
+        <span>iPhone'dan Yakala</span>
+      </button>
+      <button type="button" class="btn btn-ghost btn-add-compact" id="btnAdd" title="Hesap Ekle / Elle Seed (Ctrl+N)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M12 5v14M5 12h14"/></svg>
+        <span class="hide-in-mini">Ekle</span>
+      </button>
+      <input type="file" id="importFile" accept="application/json,.json" style="display:none">
+      <button type="button" class="icon-btn hide-in-mini" id="btnImport" title="seed.json İçe Aktar" aria-label="İçe aktar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M8 10l4 4 4-4"/><path d="M12 3v11"/></svg>
+      </button>
+      <button type="button" class="icon-btn hide-in-mini" id="btnExportAll" title="seed.json Dışa Aktar" aria-label="Dışa aktar">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M16 7l-4-4-4 4"/><path d="M12 3v11"/></svg>
+      </button>
+
+      <div class="seg hide-compact" role="group" aria-label="Görünüm">
+        <button type="button" id="viewGrid" class="on" title="Kart Görünümü" aria-label="Kart görünümü">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1.5"/><rect x="14" y="3" width="7" height="7" rx="1.5"/><rect x="3" y="14" width="7" height="7" rx="1.5"/><rect x="14" y="14" width="7" height="7" rx="1.5"/></svg>
+        </button>
+        <button type="button" id="viewList" title="Kompakt Liste" aria-label="Liste görünümü">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M8 6h13M8 12h13M8 18h13M3 6h.01M3 12h.01M3 18h.01"/></svg>
+        </button>
+        <button type="button" id="viewFocus" title="Odak Sahnesi" aria-label="Odak görünümü">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="4" width="6" height="16" rx="1.5"/><rect x="12" y="4" width="9" height="16" rx="1.5"/></svg>
+        </button>
+      </div>
+    </div>
+
+    <div class="search-wrap" id="searchWrap">
+      <svg class="search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+      <input type="search" id="searchInput" class="search-input" placeholder="Hesap ara…" autocomplete="off" spellcheck="false">
+      <button type="button" class="search-kbd" id="btnCmdPalette" title="Komut Paleti">Ctrl+K</button>
+      <button type="button" class="search-clear" id="searchClear" aria-label="Aramayı temizle">
+        <svg viewBox="0 0 12 12" width="10" height="10"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="tag-bar" id="tagBar" role="tablist" aria-label="Etiket filtreleri"></div>
+  </section>
+
+  <main class="main" id="main">
+    <div class="canvas-inner">
+      <div class="meta-strip">
+        <div class="meta-left">
+          <span id="sectionLabel">Şifreli Kasa</span>
+          <span class="meta-count" id="accCount">0</span>
+          <span id="clipTimerBadge" style="display:none;color:var(--ok);font-family:var(--mono);font-size:11px"></span>
+        </div>
+        <div class="meta-right hide-compact">
+          <span class="shortcut-hint"><span class="kbd">1-9</span> Kopyala</span>
+          <span class="shortcut-hint"><span class="kbd">N</span> Sonraki</span>
+          <button type="button" class="tel-btn" id="btnShortcuts" title="Klavye kısayolları">
+            <span class="kbd">?</span>
+          </button>
+        </div>
+      </div>
+
+      <div id="stageContainer"></div>
+    </div>
+  </main>
+</div>
+
+<div class="ctx-menu" id="ctxMenu" role="menu">
+  <button type="button" data-ctx="copy"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="9" y="9" width="11" height="11" rx="2"/><path d="M5 15V5a2 2 0 0 1 2-2h10"/></svg>Aktif Kodu Kopyala</button>
+  <button type="button" data-ctx="copyNext"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M5 12h14M13 5l7 7-7 7"/></svg>Sonraki Kodu Kopyala</button>
+  <div class="ctx-sep"></div>
+  <button type="button" data-ctx="pin" id="ctxPinBtn"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 17v5M9 10.76a2 2 0 0 1-1.11 1.79l-1.78.9A2 2 0 0 0 5 15.24V16h14v-.76a2 2 0 0 0-1.11-1.79l-1.78-.9A2 2 0 0 1 15 10.76V6a1 1 0 0 1 1-1H8a1 1 0 0 1 1 1z"/></svg><span>Üste Sabitle</span></button>
+  <button type="button" data-ctx="edit"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M12 20h9"/><path d="M16.5 3.5a2.12 2.12 0 0 1 3 3L7 19l-4 1 1-4z"/></svg>Hesabı Düzenle</button>
+  <button type="button" data-ctx="qr"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><path d="M14 14h3v3h-3zM18 18h3v3h-3z"/></svg>QR Kod Göster</button>
+  <button type="button" data-ctx="export"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M16 7l-4-4-4 4"/><path d="M12 3v11"/></svg>seed.json Paylaş</button>
+  <div class="ctx-sep"></div>
+  <button type="button" class="danger" data-ctx="delete"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M3 6h18M8 6V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2M19 6v14a2 2 0 0 1-2 2H7a2 2 0 0 1-2-2V6"/></svg>Hesabı Sil</button>
+</div>
+
+<div class="dropzone-overlay" id="dropOverlay" aria-hidden="true">
+  <div class="empty-ic">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><path d="M4 14v5a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-5"/><path d="M8 10l4 4 4-4"/><path d="M12 3v11"/></svg>
+  </div>
+  <h2 style="font-size:18px;font-weight:800">seed.json bırakın</h2>
+  <p style="font-size:13px;color:var(--tx2)">Hesaplar şifreli kasaya aktarılır.</p>
+</div>
+
+<div class="lock-screen" id="lockScreen">
+  <div class="lock-card" id="lockCard">
+    <div class="empty-ic">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"><rect x="4" y="11" width="16" height="10" rx="2"/><path d="M8 11V7a4 4 0 0 1 8 0v4"/></svg>
+    </div>
+    <h2 style="font-size:18px;font-weight:800">Kasa Kilitli</h2>
+    <p style="font-size:12.5px;color:var(--tx3)">PIN kodunuzu girin.</p>
+    <form id="unlockForm" style="width:100%">
+      <div class="field" style="margin-bottom:10px">
+        <input type="password" id="unlockPinInput" class="mono" inputmode="numeric" placeholder="PIN kodu" autocomplete="off" style="text-align:center;letter-spacing:0.3em;font-size:18px">
+        <div class="field-err" id="unlockErr"></div>
+      </div>
+      <button type="submit" class="btn btn-primary" style="width:100%">Kilidi Aç</button>
+    </form>
+  </div>
+</div>
+
+<div class="toast-stack" id="toastStack" aria-live="polite"></div>
+
+<dialog id="paletteDialog" class="dialog-palette" closedby="any" aria-labelledby="palTitle">
+  <h1 id="palTitle" style="position:absolute;width:1px;height:1px;overflow:hidden;clip:rect(0,0,0,0)">Komut Paleti</h1>
+  <div class="pal-top">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"><circle cx="11" cy="11" r="7"/><path d="M20 20l-3.5-3.5"/></svg>
+    <input type="text" id="palInput" class="pal-input" placeholder="Hesap ara veya komut çalıştır…" autofocus autocomplete="off">
+    <span class="kbd">ESC</span>
+  </div>
+  <div class="pal-list" id="palList"></div>
+  <div class="pal-foot">
+    <span><span class="kbd">↑</span> <span class="kbd">↓</span> Gezin · <span class="kbd">Enter</span> Seç</span>
+    <span><span class="kbd">Shift+Enter</span> Sonraki</span>
+  </div>
+</dialog>
+
+<dialog id="accountDialog" closedby="any" aria-labelledby="accDlgTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="accDlgTitle">Hesap Ekle</h1>
+        <p class="dlg-sub" id="accDlgSub">Aktivasyon yapın veya mevcut hex seed girin.</p>
+      </div>
+      <button type="button" class="dlg-close" data-close="accountDialog" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="tabs" id="addTabs">
+      <button type="button" id="tabAct" class="on">NTTGame Aktivasyon</button>
+      <button type="button" id="tabSeed">Hex Seed</button>
+    </div>
+
+    <form id="accountForm" novalidate>
+      <div id="paneAct">
+        <div class="field">
+          <label for="f_id">OTP ID <span class="lbl-meta">32 karakter</span></label>
+          <input id="f_id" class="mono" placeholder="ör. ko1234567890..." autofocus>
+        </div>
+        <div class="row2">
+          <div class="field">
+            <label for="f_code">Aktivasyon Kodu</label>
+            <input id="f_code" class="mono" placeholder="6 haneli kod" maxlength="6" inputmode="numeric">
+          </div>
+          <div class="field">
+            <label for="f_tag_a">Etiket</label>
+            <input id="f_tag_a" list="tagPresets" placeholder="Ana, PvP…">
+          </div>
+        </div>
+        <div class="field">
+          <label for="f_note_a">Not (opsiyonel)</label>
+          <input id="f_note_a" placeholder="ör. Agartha Ana">
+        </div>
+      </div>
+
+      <div id="paneSeed" style="display:none">
+        <div class="live-preview hidden" id="liveSeedPreview">
+          <div>
+            <div style="font-size:11px;font-weight:700;color:var(--ok)">Canlı Önizleme</div>
+            <div style="font-size:11px;color:var(--tx3)" id="liveSeedMeta">SHA-256 · 60sn</div>
+          </div>
+          <div class="live-preview-code" id="liveSeedCode">000 000</div>
+        </div>
+
+        <div class="field" id="seedFieldWrap">
+          <label for="f_seed">Seed (Hex) <span class="lbl-meta" id="seedLenMeta">0 / 64 hex</span></label>
+          <input id="f_seed" class="mono" placeholder="40 veya 64 haneli hex seed">
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="f_label">Hesap Adı</label>
+            <input id="f_label" placeholder="ör. Knight Ana">
+          </div>
+          <div class="field">
+            <label for="f_kind">Motor</label>
+            <select id="f_kind">
+              <option value="plus">AnyOTP+ (SHA-256)</option>
+              <option value="classic">Klasik (SHA-1)</option>
+            </select>
+          </div>
+        </div>
+
+        <div class="row2">
+          <div class="field">
+            <label for="f_tag_s">Etiket</label>
+            <input id="f_tag_s" list="tagPresets" placeholder="Ana, Farm…">
+          </div>
+          <div class="field">
+            <label for="f_realid">OTP ID (opsiyonel)</label>
+            <input id="f_realid" class="mono" placeholder="NT00KO...">
+          </div>
+        </div>
+
+        <div class="field">
+          <label for="f_note_s">Not (opsiyonel)</label>
+          <input id="f_note_s" placeholder="Sunucu veya karakter">
+        </div>
+      </div>
+
+      <div class="field">
+        <label>Kart Rengi</label>
+        <div class="swatches" id="colorSwatches"></div>
+      </div>
+
+      <div class="field-err" id="accFormErr"></div>
+
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" data-close="accountDialog">Vazgeç</button>
+        <button type="submit" class="btn btn-primary" id="saveAccBtn">Kaydet</button>
+      </div>
+    </form>
+  </div>
+  <datalist id="tagPresets">
+    <option value="Ana">
+    <option value="PvP">
+    <option value="Farm">
+    <option value="Pazar">
+    <option value="Yan Hesap">
+  </datalist>
+</dialog>
+
+<dialog id="checkDialog" class="dialog-wide" closedby="any" aria-labelledby="checkTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="checkTitle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><path d="M9 12l2 2 4-4"/><circle cx="12" cy="12" r="9"/></svg>
+          Sistem Kontrolü
+        </h1>
+        <p class="dlg-sub">Zaman sunucuları, aktivasyon ve kasa sağlığı.</p>
+      </div>
+      <button type="button" class="dlg-close" data-close="checkDialog" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div id="checkRows"></div>
+    <div class="vault-card" id="vaultInfoBox" style="display:none"></div>
+
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-ghost" data-close="checkDialog">Kapat</button>
+      <button type="button" class="btn btn-primary" id="btnRerunCheck" autofocus>Tekrar Tara</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="clockDialog" closedby="any" aria-labelledby="clockTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="clockTitle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><circle cx="12" cy="12" r="9"/><path d="M12 7v5l3 2"/></svg>
+          Saat Senkronizasyonu
+        </h1>
+        <p class="dlg-sub">Kodların telefonla birebir eşleşmesi için saati hizalar.</p>
+      </div>
+      <button type="button" class="dlg-close" data-close="clockDialog" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="clock-stage">
+      <div class="sync-dial" id="syncDial">
+        <svg viewBox="0 0 116 116">
+          <circle cx="58" cy="58" r="50" stroke="rgba(148,172,214,0.14)" stroke-width="6" fill="none"/>
+          <circle cx="58" cy="58" r="50" stroke="var(--accent)" stroke-width="6" fill="none" stroke-linecap="round" stroke-dasharray="314" stroke-dashoffset="78" class="sync-arc" id="syncArc"/>
+        </svg>
+        <div class="clock-live-readout" id="clockDialTime">--:--:--</div>
+      </div>
+      <div class="clock-off" id="clockOff">+0.00s</div>
+      <div class="clock-lbl">sunucu saat sapması</div>
+      <div class="clock-src" id="clockSrc">henüz senkronlanmadı</div>
+    </div>
+
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-ghost" data-close="clockDialog">Kapat</button>
+      <button type="button" class="btn btn-primary" id="btnSyncClock" autofocus>Saati Hizala</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="qrDialog" class="dialog-sm" closedby="any" aria-labelledby="qrTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="qrTitle">QR Kod</h1>
+        <p class="dlg-sub" id="qrSub">Seed yedeğini paylaşın.</p>
+      </div>
+      <button type="button" class="dlg-close" data-close="qrDialog" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="qr-wrap">
+      <div class="qr-frame" id="qrFrame"></div>
+      <div style="font-family:var(--mono);font-size:11px;color:var(--tx3);text-align:center;word-break:break-all" id="qrMeta"></div>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-ghost" data-close="qrDialog">Kapat</button>
+      <button type="button" class="btn btn-primary" id="btnQrExportJson">seed.json İndir</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="settingsDialog" closedby="any" aria-labelledby="setTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="setTitle">Ayarlar</h1>
+        <p class="dlg-sub">Gizlilik, ses ve PIN kilidi.</p>
+      </div>
+      <button type="button" class="dlg-close" data-close="settingsDialog" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="set-row">
+      <div>
+        <div class="set-title">Pano Otomatik Temizleme</div>
+        <div class="set-desc">30 saniye sonra kopyalanan kodu siler.</div>
+      </div>
+      <button type="button" class="toggle" role="switch" id="swAutoClear" aria-checked="true" aria-label="Pano otomatik temizleme"></button>
+    </div>
+
+    <div class="set-row">
+      <div>
+        <div class="set-title">Ses Efektleri</div>
+        <div class="set-desc">Kopyalama ve yenileme sesleri.</div>
+      </div>
+      <button type="button" class="toggle" role="switch" id="swSound" aria-checked="true" aria-label="Ses efektleri"></button>
+    </div>
+
+    <div class="set-row">
+      <div>
+        <div class="set-title">Yayıncı Bulanıklaştırma</div>
+        <div class="set-desc">Kodları gizler, fareyle açar.</div>
+      </div>
+      <button type="button" class="toggle" role="switch" id="swPrivacy" aria-checked="false" aria-label="Gizlilik modu"></button>
+    </div>
+
+    <div class="set-row" style="flex-direction:column;align-items:stretch;gap:10px">
+      <div style="display:flex;align-items:center;justify-content:space-between">
+        <div>
+          <div class="set-title">PIN Kilidi</div>
+          <div class="set-desc" id="pinStatusDesc">4-8 haneli yerel PIN ekleyin.</div>
+        </div>
+        <button type="button" class="btn btn-ghost btn-sm" id="btnRemovePin" style="display:none">Kaldır</button>
+      </div>
+      <form id="pinSetupForm" style="display:flex;gap:8px">
+        <input type="password" id="newPinInput" class="mono" inputmode="numeric" maxlength="8" placeholder="Yeni PIN (4-8 rakam)" style="flex:1;background:var(--s1);border:1px solid var(--line-strong);border-radius:8px;padding:8px 11px;color:var(--tx);font-size:13px">
+        <button type="submit" class="btn btn-primary btn-sm">Kaydet</button>
+      </form>
+    </div>
+
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-primary" data-close="settingsDialog" autofocus>Tamam</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="confirmDialog" class="dialog-sm" closedby="any" aria-labelledby="confirmTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="confirmTitle">Hesap silinsin mi?</h1>
+        <p class="dlg-sub" id="confirmDesc">Bu hesap yerel kasadan kalıcı olarak silinir.</p>
+      </div>
+    </div>
+    <form method="dialog" class="dlg-actions" style="margin-top:12px">
+      <button value="cancel" class="btn btn-ghost" autofocus>Vazgeç</button>
+      <button value="confirm" class="btn btn-danger">Sil</button>
+    </form>
+  </div>
+</dialog>
+
+<dialog id="shortcutsDialog" closedby="any" aria-labelledby="scTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="scTitle">Kısayollar</h1>
+        <p class="dlg-sub">Hızlı klavye komutları.</p>
+      </div>
+      <button type="button" class="dlg-close" data-close="shortcutsDialog" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+    <div class="kbd-grid">
+      <div class="kbd-row"><span>Komut Paleti</span><span class="kbd">Ctrl + K</span></div>
+      <div class="kbd-row"><span>1-9. Kodu Kopyala</span><span class="kbd">1 – 9</span></div>
+      <div class="kbd-row"><span>Sonraki Kod</span><span class="kbd">N</span></div>
+      <div class="kbd-row"><span>Gizlilik Modu</span><span class="kbd">P</span></div>
+      <div class="kbd-row"><span>Mini Mod</span><span class="kbd">Alt + M</span></div>
+      <div class="kbd-row"><span>Hesap Ekle</span><span class="kbd">Ctrl + N</span></div>
+    </div>
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-primary" data-close="shortcutsDialog" autofocus>Tamam</button>
+    </div>
+  </div>
+</dialog>
+
+<dialog id="captureDialog" class="dialog-wizard" aria-labelledby="capTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head" style="margin-bottom:10px">
+      <div>
+        <h1 id="capTitle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 18h.01"/></svg>
+          iPhone Kurulumu
+        </h1>
+        <p class="dlg-sub" id="capStepSubtitle">Adım 1 / 6 — Aynı Wi-Fi ağına bağlanın.</p>
+      </div>
+      <button type="button" class="dlg-close" id="capCloseBtn" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="cap-prog-wrap">
+      <div class="cap-prog-bar"><div class="cap-prog-fill" id="capProgFill" style="width:16.6%"></div></div>
+      <div class="cap-stepper cap-stepper-6" id="capStepper" role="tablist">
+        <button type="button" class="cap-step active" data-step="1"><span class="cap-num">1</span><span>Wi-Fi</span></button>
+        <button type="button" class="cap-step" data-step="2"><span class="cap-num">2</span><span>QR</span></button>
+        <button type="button" class="cap-step" data-step="3"><span class="cap-num">3</span><span>Güven</span></button>
+        <button type="button" class="cap-step" data-step="4"><span class="cap-num">4</span><span>Proxy</span></button>
+        <button type="button" class="cap-step" data-step="5"><span class="cap-num">5</span><span>Aktive</span></button>
+        <button type="button" class="cap-step" data-step="6"><span class="cap-num">6</span><span>Bitti</span></button>
+      </div>
+    </div>
+
+    <section class="cap-pane active" id="capPane1">
+      <div class="cap-hero-visual">
+        <div class="cap-dev-node">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></svg>
+          <span>Bu PC</span>
+        </div>
+        <div class="cap-wifi-bridge" aria-hidden="true">
+          <div class="cap-wifi-line"><span class="cap-wifi-pkt"></span></div>
+          <span>Aynı Wi-Fi</span>
+        </div>
+        <div class="cap-dev-node">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.9"><rect x="6" y="2" width="12" height="20" rx="2.5"/><path d="M12 18h.01"/></svg>
+          <span>iPhone</span>
+        </div>
+      </div>
+
+      <div class="cap-center-copy">
+        <h2>Aynı Wi-Fi'da mısın?</h2>
+        <p>Telefonun aktif kalır · %100 yerel ve şifreli</p>
+      </div>
+
+      <details class="cap-trouble cap-adv">
+        <summary>Gelişmiş Ağ <span class="mono" id="capAdvSummary" style="font-size:11px;color:var(--tx3)">(Otomatik)</span></summary>
+        <div class="cap-adv-stack">
+          <div class="field">
+            <label for="capIpSelect">Yerel IP</label>
+            <input id="capIpSelect" list="capIpList" class="mono" placeholder="192.168.1.x">
+            <datalist id="capIpList"></datalist>
+            <div class="cap-ip-chips" id="capIpChips"></div>
+          </div>
+          <div class="field">
+            <label for="capModeSelect">Mod</label>
+            <select id="capModeSelect">
+              <option value="proxy">Proxy Modu (Önerilen)</option>
+              <option value="dns">DNS Modu (Alternatif)</option>
+            </select>
+          </div>
+        </div>
+      </details>
+
+      <div class="field-err" id="capStartErr"></div>
+
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" id="capCancel1">Vazgeç</button>
+        <button type="button" class="btn btn-primary" id="capStartBtn">Başla →</button>
+      </div>
+    </section>
+
+    <section class="cap-pane" id="capPane2">
+      <div class="cap-qr-centered">
+        <div class="qr-frame cap-qr-big" id="capQrFrame"></div>
+        <button type="button" class="cap-copy-chip mono" id="capQrUrlBtn" title="Linki kopyala">http://...</button>
+      </div>
+
+      <div class="cap-live-pill" id="capPhonePill">
+        <span class="pulse-dot"></span>
+        <span id="capPhoneStatus">iPhone kameranı QR koda tut…</span>
+      </div>
+
+      <div class="cap-visual-steps">
+        <div class="cap-vs-item" id="capChk1">
+          <span class="cap-vs-badge">1</span>
+          <div><b>Kamerayla okut</b> → sarı linke dokun</div>
+        </div>
+        <div class="cap-vs-item" id="capChk2">
+          <span class="cap-vs-badge">2</span>
+          <div><b>"Profili İndir"</b> → <b>İzin Ver</b></div>
+        </div>
+      </div>
+
+      <details class="cap-trouble">
+        <summary>Sayfa açılmıyor mu?</summary>
+        <ul>
+          <li>Mobil veriyi kapat, PC ile <b>aynı Wi-Fi</b>'a bağlan.</li>
+          <li>Windows Güvenlik Duvarı çıkarsa <b>İzin Ver</b> de.</li>
+          <li>VPN varsa kapatıp Adım 1'den <code>192.168.x.x</code> seç.</li>
+        </ul>
+      </details>
+
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" data-cap-go="1">← Geri</button>
+        <button type="button" class="btn btn-primary" data-cap-go="3">İndirdim →</button>
+      </div>
+    </section>
+
+    <section class="cap-pane" id="capPane3">
+      <div class="cap-ios-stack">
+        <div class="cap-ios-card">
+          <div class="cap-ios-num">1 · Profili Yükle</div>
+          <div class="ios-mock">
+            <div class="ios-mock-path">Ayarlar (En Üst)</div>
+            <div class="ios-mock-row ios-hi">
+              <span>Profil İndirildi</span>
+              <span class="ios-chev">Yükle ›</span>
+            </div>
+          </div>
+        </div>
+
+        <div class="cap-ios-card">
+          <div class="cap-ios-num">2 · Tam Güven Aç <span class="cap-req">Yeşil Yap</span></div>
+          <div class="ios-mock">
+            <div class="ios-mock-path">Genel › Hakkında › Sertifika Güven Ayarları</div>
+            <div class="ios-mock-row">
+              <span>Peyywado OTP Gecici CA</span>
+              <span class="ios-switch ios-anim-on"></span>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" data-cap-go="2">← QR</button>
+        <button type="button" class="btn btn-primary" data-cap-go="4">Açtım, Devam Et →</button>
+      </div>
+    </section>
+
+    <section class="cap-pane" id="capPane4">
+      <div id="capProxyInstr">
+        <div class="ios-mock" style="margin-bottom:10px">
+          <div class="ios-mock-path">Ayarlar › Wi-Fi › (ⓘ) › Proxy'yi Ayarla › Elle</div>
+          <div class="ios-mock-row"><span>Sunucu</span><span class="mono" style="color:var(--accent-hi)" id="capMockHost">192.168.1.x</span></div>
+          <div class="ios-mock-row" style="border-top:1px solid var(--line)"><span>Kapı</span><span class="mono" style="color:var(--accent-hi)" id="capMockPort">8888</span></div>
+        </div>
+
+        <div class="cap-kv-duo">
+          <button type="button" class="cap-kv" id="capCopyHost" title="Tıkla kopyala">
+            <span class="cap-kv-lbl">Sunucu</span>
+            <span class="cap-kv-val mono" id="capHostVal">192.168.1.x</span>
+          </button>
+          <button type="button" class="cap-kv" id="capCopyPort" title="Tıkla kopyala">
+            <span class="cap-kv-lbl">Kapı</span>
+            <span class="cap-kv-val mono" id="capPortVal">8888</span>
+          </button>
+        </div>
+        <button type="button" class="cap-copy-chip mono" id="capPacUrlBtn" style="display:none">PAC</button>
+      </div>
+
+      <div id="capDnsInstr" style="display:none">
+        <div class="ios-mock" style="margin-bottom:10px">
+          <div class="ios-mock-path">Ayarlar › Wi-Fi › (ⓘ) › DNS › Elle</div>
+        </div>
+        <button type="button" class="cap-kv" id="capCopyDns" style="width:100%">
+          <span class="cap-kv-lbl">DNS Sunucusu</span>
+          <span class="cap-kv-val mono" id="capDnsVal">192.168.1.x</span>
+        </button>
+      </div>
+
+      <div class="cap-verify-card" id="capVerifyCard">
+        <div class="cap-live-pill" id="capTlsPill">
+          <span class="pulse-dot"></span>
+          <span id="capTlsStatus">Kaydet → Safari'de "Test Et"e dokun…</span>
+        </div>
+        <div class="cap-diag-msg" id="capTlsDiag"></div>
+      </div>
+
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" data-cap-go="3">← Güven</button>
+        <button type="button" class="btn btn-primary" data-cap-go="5">Devam Et →</button>
+      </div>
+    </section>
+
+    <section class="cap-pane" id="capPane5">
+      <div class="cap-radar-box">
+        <div class="cap-radar-ring">
+          <div class="cap-radar-dot"></div>
+        </div>
+        <div>
+          <div class="cap-radar-title" id="capRadarTitle">Şimdi AnyOTP+'ı Aktive Et</div>
+          <div class="cap-radar-sub">Telefonun normal aktive olur, seed buraya otomatik düşer.</div>
+        </div>
+      </div>
+
+      <div class="cap-mini-flow">
+        <span><b>1</b> AnyOTP+ aç</span>
+        <span>→</span>
+        <span><b>2</b> ID + 6 hane</span>
+        <span>→</span>
+        <span><b>3</b> Aktive Et</span>
+      </div>
+
+      <div class="cap-live-pill ok" id="capListenStatusPill">
+        <span class="pulse-dot ok"></span>
+        <span id="capListenStatusText">Hazır · Aktivasyon bekleniyor…</span>
+      </div>
+
+      <details class="cap-trouble cap-adv">
+        <summary>Teknik Günlük <span class="mono" id="capListenAddr" style="font-size:11px;color:var(--tx3)">—</span></summary>
+        <div class="cap-log" id="capLog" style="margin-top:8px"></div>
+      </details>
+
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" data-cap-go="4">← Proxy</button>
+        <button type="button" class="btn btn-ghost" id="capStopBtn">Durdur</button>
+      </div>
+    </section>
+
+    <section class="cap-pane" id="capPane6">
+      <div class="cap-captured-card">
+        <div class="cap-captured-badge">✓ SEED YAKALANDI</div>
+        <div class="cap-match-lbl">Telefondaki kodla aynı mı?</div>
+        <div class="cap-match-ring-row">
+          <div class="cap-match-code mono" id="capResCode">000 000</div>
+          <svg class="cap-mini-ring" viewBox="0 0 36 36" aria-hidden="true">
+            <circle cx="18" cy="18" r="14" stroke="rgba(148,172,214,0.18)" stroke-width="3.2" fill="none"/>
+            <circle id="capRingArc" cx="18" cy="18" r="14" stroke="var(--ok)" stroke-width="3.2" fill="none" stroke-linecap="round" stroke-dasharray="87.96" stroke-dashoffset="0"/>
+          </svg>
+        </div>
+        <div class="cap-match-rem mono" id="capResRem">60sn kalan</div>
+
+        <div class="cap-captured-meta">
+          <span>ID: <b class="mono" id="capResUid">—</b></span>
+          <span>Seri: <b class="mono" id="capResSerial">—</b></span>
+        </div>
+        <div class="cap-seed-line">
+          <span class="mono" id="capResSeed">••••••••</span>
+          <button type="button" class="btn btn-ghost btn-sm" id="capToggleSeedBtn">Göster</button>
+          <button type="button" class="btn btn-ghost btn-sm" id="capCopySeedBtn">Kopyala</button>
+        </div>
+      </div>
+
+      <div class="row2">
+        <div class="field">
+          <label for="capSaveLabel">Hesap Adı</label>
+          <input id="capSaveLabel" placeholder="Knight Ana">
+        </div>
+        <div class="field">
+          <label for="capSaveTag">Etiket</label>
+          <input id="capSaveTag" list="tagPresets" placeholder="Ana">
+        </div>
+      </div>
+
+      <div class="cap-cleanup-box" id="capCleanupBox">
+        <strong>Son Adım:</strong>
+        <span id="capCleanupText">iPhone'da Wi-Fi Proxy'yi <b>Kapalı</b> yap.</span>
+      </div>
+
+      <div class="dlg-actions">
+        <button type="button" class="btn btn-ghost" id="capDoneNoSave">Kapat</button>
+        <button type="button" class="btn btn-ghost" id="capExportSeedBtn">Yedek</button>
+        <button type="button" class="btn btn-primary" id="capSaveVaultBtn">Kaydet & Bitir</button>
+      </div>
+    </section>
+  </div>
+</dialog>
+
+<dialog id="guideDialog" class="dialog-wizard" closedby="any" aria-labelledby="guideTitle">
+  <div class="dlg-inner">
+    <div class="dlg-head">
+      <div>
+        <h1 id="guideTitle">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 3l8 4v5c0 5-3.5 8.5-8 9.8C7.5 20.5 4 17 4 12V7l8-4z"/><path d="M9.5 12.2l1.8 1.8 3.6-3.8"/></svg>
+          Rehber & Güvenlik
+        </h1>
+        <p class="dlg-sub">1 dakikalık kurulum ve güvenlik garantisi.</p>
+      </div>
+      <button type="button" class="dlg-close" data-close="guideDialog" aria-label="Kapat">
+        <svg viewBox="0 0 12 12" width="12" height="12"><path d="M2.5 2.5l7 7m0-7l-7 7" stroke="currentColor" stroke-width="1.5" stroke-linecap="round"/></svg>
+      </button>
+    </div>
+
+    <div class="tabs" id="guideTabs">
+      <button type="button" id="gTabHow" class="on">Kurulum</button>
+      <button type="button" id="gTabTrust">Güvenlik & SSS</button>
+    </div>
+
+    <div id="guidePaneHow">
+      <div class="guide-grid">
+        <div class="guide-card">
+          <div class="guide-num">1</div>
+          <div class="guide-t">Aynı Wi-Fi</div>
+          <p>PC ve iPhone aynı Wi-Fi'dayken <b>iPhone'dan Yakala</b>'ya tıkla.</p>
+        </div>
+        <div class="guide-card">
+          <div class="guide-num">2</div>
+          <div class="guide-t">QR & Tam Güven</div>
+          <p>QR okut → profili yükle → <b>Sertifika Güven</b> anahtarını yeşil yap.</p>
+        </div>
+        <div class="guide-card">
+          <div class="guide-num">3</div>
+          <div class="guide-t">Wi-Fi Proxy</div>
+          <p>Wi-Fi Proxy'ye IP + Port gir → Safari'de <b>Test Et</b>'e dokun.</p>
+        </div>
+        <div class="guide-card">
+          <div class="guide-num">4</div>
+          <div class="guide-t">Aktive Et & Kapat</div>
+          <p>AnyOTP+'ı aktive et. Seed otomatik kaydedilir. Sonra Proxy'yi kapat.</p>
+        </div>
+      </div>
+    </div>
+
+    <div id="guidePaneTrust" style="display:none">
+      <div class="guide-grid">
+        <div class="guide-card trust">
+          <div class="guide-t">🔒 %100 Yerel</div>
+          <p>Seed hiçbir sunucuya gitmez. Trafik yalnızca iPhone ↔ PC ↔ NTTGame arasında.</p>
+        </div>
+        <div class="guide-card trust">
+          <div class="guide-t">⚡ RAM Sertifika</div>
+          <p>Geçici sertifika sadece RAM'de üretilir, pencere kapanınca silinir.</p>
+        </div>
+        <div class="guide-card trust">
+          <div class="guide-t">🛡 DPAPI Kasa</div>
+          <p>Seed'ler Windows DPAPI ile şifrelenir; başka PC'de açılamaz.</p>
+        </div>
+        <div class="guide-card trust">
+          <div class="guide-t">📱 Telefon Aktif</div>
+          <p>iPhone AnyOTP+ bozulmaz; iki cihaz aynı 6 haneli kodu üretir.</p>
+        </div>
+      </div>
+
+      <div class="guide-faq">
+        <details>
+          <summary>İşlem bitince telefonda neyi geri almalıyım?</summary>
+          <p><b>Ayarlar → Wi-Fi → (ⓘ) → Proxy → Kapalı</b> yapın. İsterseniz geçici profili de kaldırabilirsiniz.</p>
+        </details>
+        <details>
+          <summary>Kodlar telefonla uyuşmazsa?</summary>
+          <p>Üstteki saat göstergesine tıklayıp <b>Saati Hizala</b>'ya basın.</p>
+        </details>
+      </div>
+    </div>
+
+    <div class="dlg-actions">
+      <button type="button" class="btn btn-ghost" data-close="guideDialog">Kapat</button>
+      <button type="button" class="btn btn-primary" id="guideLaunchCaptureBtn">Kurulumu Başlat →</button>
+    </div>
+  </div>
+</dialog>
+
+<script src="sound.js"></script>
+<script src="qr.js"></script>
+<script src="app.js"></script>
+</body>
+</html>

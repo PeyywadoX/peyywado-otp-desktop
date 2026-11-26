@@ -833,6 +833,7 @@
     document.getElementById('accFormErr').textContent = '';
     const tabs = document.getElementById('addTabs');
     const seedWrap = document.getElementById('seedFieldWrap');
+    const pasteBar = document.getElementById('transferPasteBar');
     const preview = document.getElementById('liveSeedPreview');
 
     if (accountToEdit) {
@@ -842,6 +843,7 @@
       tabs.style.display = 'none';
       setAddTab('seed');
       seedWrap.style.display = 'none';
+      if (pasteBar) pasteBar.style.display = 'none';
       preview.classList.add('hidden');
       document.getElementById('f_seed').value = accountToEdit.seed;
       document.getElementById('f_label').value = accountToEdit.label || '';
@@ -856,6 +858,7 @@
       document.getElementById('saveAccBtn').textContent = 'Kaydet';
       tabs.style.display = '';
       seedWrap.style.display = '';
+      if (pasteBar) pasteBar.style.display = '';
       preview.classList.add('hidden');
       ['f_id', 'f_code', 'f_tag_a', 'f_note_a', 'f_seed', 'f_label', 'f_tag_s', 'f_realid', 'f_note_s'].forEach(i => {
         document.getElementById(i).value = '';
@@ -871,7 +874,12 @@
 
   // Live hex seed preview & auto-detection while typing
   async function updateLiveSeedPreview() {
-    const raw = document.getElementById('f_seed').value.replace(/\s/g, '');
+    const rawText = document.getElementById('f_seed').value.trim();
+    if (rawText.startsWith('PWOTP1:') || rawText.startsWith('{') || rawText.startsWith('[')) {
+      const handled = await applyTransferText(rawText);
+      if (handled) return;
+    }
+    const raw = rawText.replace(/\s/g, '');
     const meta = document.getElementById('seedLenMeta');
     const preview = document.getElementById('liveSeedPreview');
     const kindSel = document.getElementById('f_kind');
@@ -1045,8 +1053,141 @@
     document.getElementById('ctxMenu').classList.remove('open');
   }
 
+  function encodeTransferCode(list) {
+    const payload = list.length === 1
+      ? {
+          v: 1,
+          label: list[0].label || '',
+          realId: list[0].realId || '',
+          note: list[0].note || '',
+          seed: list[0].seed,
+          kind: list[0].kind || 'plus',
+          period: list[0].period || 60,
+          digits: list[0].digits || 6,
+          tag: list[0].tag || '',
+          color: list[0].color || 'ember',
+        }
+      : {
+          v: 1,
+          accounts: list.map(a => ({
+            label: a.label || '',
+            realId: a.realId || '',
+            note: a.note || '',
+            seed: a.seed,
+            kind: a.kind || 'plus',
+            period: a.period || 60,
+            digits: a.digits || 6,
+            tag: a.tag || '',
+            color: a.color || 'ember',
+          })),
+        };
+    const bytes = new TextEncoder().encode(JSON.stringify(payload));
+    let bin = '';
+    for (const b of bytes) bin += String.fromCharCode(b);
+    return 'PWOTP1:' + btoa(bin);
+  }
+
+  function decodeTransferCode(raw) {
+    const txt = (raw || '').trim();
+    if (!txt) return null;
+    try {
+      let jsonStr = txt;
+      if (txt.startsWith('PWOTP1:')) {
+        const b64 = txt.slice(7).replace(/\s+/g, '');
+        const bin = atob(b64);
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        jsonStr = new TextDecoder().decode(bytes);
+      }
+      const data = JSON.parse(jsonStr);
+      const list = Array.isArray(data)
+        ? data
+        : Array.isArray(data.accounts)
+          ? data.accounts
+          : (data && (data.seed || data.secret || data.seedHex))
+            ? [data]
+            : [];
+      const valid = list.filter(it => {
+        const s = String(it.seed || it.secret || it.seedHex || '').replace(/\s/g, '');
+        return /^[0-9a-fA-F]+$/.test(s) && s.length >= 32;
+      });
+      return valid.length ? valid : null;
+    } catch {
+      return null;
+    }
+  }
+
+  async function importAccountList(list) {
+    let added = 0;
+    for (const it of list) {
+      const seed = String(it.seed || it.secret || it.seedHex || '').replace(/\s/g, '');
+      if (!/^[0-9a-fA-F]+$/.test(seed) || seed.length < 32) continue;
+      const acc = {
+        id: uid(),
+        label: it.label || ('Hesap ' + (accounts.length + 1)),
+        realId: it.realId || it.serial || '',
+        note: it.note || '',
+        seed,
+        kind: it.kind || (seed.length === 40 ? 'classic' : 'plus'),
+        period: it.period || 60,
+        digits: it.digits || 6,
+        pinned: !!it.pinned,
+        tag: it.tag || '',
+        color: it.color || 'ember',
+      };
+      if (hasTauri) {
+        try {
+          const saved = await invoke('vault_save', { account: acc });
+          accounts.push(saved);
+          added++;
+        } catch {}
+      } else {
+        accounts.push(acc);
+        added++;
+      }
+    }
+    if (!hasTauri) persistLocal();
+    renderTags();
+    runViewTransition(renderStage);
+    return added;
+  }
+
+  async function applyTransferText(raw) {
+    const list = decodeTransferCode(raw);
+    if (!list) return false;
+    if (list.length === 1) {
+      const it = list[0];
+      const seed = String(it.seed || it.secret || it.seedHex || '').replace(/\s/g, '');
+      document.getElementById('f_seed').value = seed;
+      document.getElementById('f_label').value = it.label || '';
+      document.getElementById('f_kind').value = it.kind || (seed.length === 40 ? 'classic' : 'plus');
+      document.getElementById('f_tag_s').value = it.tag || '';
+      document.getElementById('f_realid').value = it.realId || it.serial || '';
+      document.getElementById('f_note_s').value = it.note || '';
+      if (it.color) {
+        selectedColor = it.color;
+        renderSwatches();
+      }
+      await updateLiveSeedPreview();
+      SoundFX.sync();
+      toast('Aktarım kodu çözüldü · Kaydet\'e tıklayın');
+      return true;
+    }
+    const added = await importAccountList(list);
+    closeTopLayer(document.getElementById('accountDialog'));
+    SoundFX.sync();
+    toast(`${added} hesap aktarım kodundan kasaya eklendi`);
+    return true;
+  }
+
+  function copyAccountSeed(acc) {
+    if (!acc || !acc.seed) return;
+    copyQuick(acc.seed, `${acc.label} SEED`);
+  }
+
   function openQrDialog(acc) {
     const dlg = document.getElementById('qrDialog');
+    let revealSeed = false;
     document.getElementById('qrTitle').textContent = acc.label;
     document.getElementById('qrSub').textContent = `${acc.kind === 'classic' ? 'Klasik (SHA-1)' : 'AnyOTP+ (SHA-256)'} · ${acc.realId || 'Yerel Seed'}`;
     const payload = JSON.stringify({
@@ -1060,11 +1201,31 @@
     const svg = MiniQR.toSVG(payload);
     document.getElementById('qrFrame').innerHTML = svg || '<div style="color:#000;padding:24px;font-size:12px">QR oluşturulamadı</div>';
     document.getElementById('qrMeta').textContent = `Peyywado Seed QR · ${acc.seed.length} hex`;
+
+    const seedEl = document.getElementById('qrSeedVal');
+    const toggleBtn = document.getElementById('btnQrToggleSeed');
+    const renderSeedMask = () => {
+      const s = acc.seed || '';
+      seedEl.textContent = revealSeed
+        ? s
+        : (s.length > 10 ? `${s.slice(0, 6)}••••••••${s.slice(-4)}` : '••••••••');
+      toggleBtn.textContent = revealSeed ? 'Gizle' : 'Göster';
+    };
+    renderSeedMask();
+    toggleBtn.onclick = () => {
+      revealSeed = !revealSeed;
+      renderSeedMask();
+      SoundFX.click();
+    };
+    document.getElementById('btnQrCopySeed').onclick = () => copyAccountSeed(acc);
+    document.getElementById('btnQrCopyTransfer').onclick = () => {
+      copyQuick(encodeTransferCode([acc]), 'Aktarım Kodu');
+    };
     document.getElementById('btnQrExportJson').onclick = () => exportSeed([acc], acc.label);
     dlg.showModal();
   }
 
-  function exportSeed(list, name) {
+  async function exportSeed(list, name) {
     if (!list.length) { toast('Dışa aktarılacak hesap yok', 'err'); return; }
     const data = {
       app: 'Peyywado OTP',
@@ -1076,11 +1237,28 @@
         pinned: !!a.pinned, tag: a.tag || '', color: a.color || 'ember'
       })),
     };
-    const blob = new Blob([JSON.stringify(data, null, 2)], { type: 'application/json' });
+    const jsonText = JSON.stringify(data, null, 2);
+    const filename = (name ? name.replace(/[^\w-]+/g, '_') : 'peyywado') + '_seed.json';
+
+    if (hasTauri) {
+      try {
+        const savedPath = await invoke('vault_export_to_exe_dir', { filename, content: jsonText });
+        const shortName = savedPath.split(/[/\\]/).pop() || filename;
+        SoundFX.sync();
+        toast(`EXE klasörüne kaydedildi · ${shortName}`);
+        return;
+      } catch (err) {
+        SoundFX.error();
+        toast('Dışa aktarma hatası: ' + err, 'err');
+        return;
+      }
+    }
+
+    const blob = new Blob([jsonText], { type: 'application/json' });
     const url = URL.createObjectURL(blob);
     const link = document.createElement('a');
     link.href = url;
-    link.download = (name ? name.replace(/[^\w-]+/g, '_') : 'peyywado') + '_seed.json';
+    link.download = filename;
     link.click();
     setTimeout(() => URL.revokeObjectURL(url), 1200);
     SoundFX.sync();
@@ -1090,40 +1268,10 @@
   async function importSeedFile(file) {
     if (!file) return;
     try {
-      const data = JSON.parse(await file.text());
-      const list = Array.isArray(data) ? data : (data.accounts || []);
-      if (!list.length) { toast('Dosyada geçerli hesap bulunamadı', 'err'); return; }
-      let added = 0;
-      for (const it of list) {
-        const seed = (it.seed || it.secret || it.seedHex || '').replace(/\s/g, '');
-        if (!/^[0-9a-fA-F]+$/.test(seed) || seed.length < 32) continue;
-        const acc = {
-          id: uid(),
-          label: it.label || ('Hesap ' + (accounts.length + 1)),
-          realId: it.realId || it.serial || '',
-          note: it.note || '',
-          seed,
-          kind: it.kind || (seed.length === 40 ? 'classic' : 'plus'),
-          period: it.period || 60,
-          digits: it.digits || 6,
-          pinned: !!it.pinned,
-          tag: it.tag || '',
-          color: it.color || 'ember',
-        };
-        if (hasTauri) {
-          try {
-            const saved = await invoke('vault_save', { account: acc });
-            accounts.push(saved);
-            added++;
-          } catch {}
-        } else {
-          accounts.push(acc);
-          added++;
-        }
-      }
-      if (!hasTauri) persistLocal();
-      renderTags();
-      runViewTransition(renderStage);
+      const txt = await file.text();
+      const list = decodeTransferCode(txt);
+      if (!list || !list.length) { toast('Dosyada geçerli hesap bulunamadı', 'err'); return; }
+      const added = await importAccountList(list);
       SoundFX.sync();
       toast(`${added} hesap kasaya aktarıldı`);
     } catch {
@@ -1546,6 +1694,32 @@
     document.getElementById('tabSeed').addEventListener('click', () => { SoundFX.click(); setAddTab('seed'); });
     document.getElementById('f_seed').addEventListener('input', updateLiveSeedPreview);
     document.getElementById('f_kind').addEventListener('change', updateLiveSeedPreview);
+    document.getElementById('btnPasteTransfer')?.addEventListener('click', async () => {
+      try {
+        const clip = await navigator.clipboard.readText();
+        if (!clip || !clip.trim()) {
+          SoundFX.error();
+          toast('Pano boş — önce kaynak cihazda aktarım kodunu kopyalayın', 'err');
+          return;
+        }
+        const ok = await applyTransferText(clip);
+        if (!ok) {
+          const cleanHex = clip.trim().replace(/\s/g, '');
+          if (/^[0-9a-fA-F]+$/.test(cleanHex) && cleanHex.length >= 32) {
+            document.getElementById('f_seed').value = cleanHex;
+            await updateLiveSeedPreview();
+            SoundFX.copy();
+            toast('Hex seed panodan yapıştırıldı');
+          } else {
+            SoundFX.error();
+            toast('Panoda geçerli aktarım kodu veya hex seed bulunamadı', 'err');
+          }
+        }
+      } catch {
+        SoundFX.error();
+        toast('Pano okunamadı — kodu doğrudan kutuya Ctrl+V ile yapıştırın', 'err');
+      }
+    });
     document.getElementById('accountForm').addEventListener('submit', handleAccountSubmit);
 
     document.getElementById('btnRerunCheck').addEventListener('click', runDiagnostics);
@@ -1615,6 +1789,7 @@
         case 'copyNext': copyAccountCode(id, true); break;
         case 'pin': togglePin(id); break;
         case 'edit': openAccountDialog(a); break;
+        case 'copySeed': copyAccountSeed(a); break;
         case 'qr': openQrDialog(a); break;
         case 'export': exportSeed([a], a.label); break;
         case 'delete': requestDeleteAccount(id); break;

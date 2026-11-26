@@ -208,6 +208,43 @@ fn vault_export(ids: Vec<String>) -> Result<String, String> {
     serde_json::to_string_pretty(&payload).map_err(|e| e.to_string())
 }
 
+fn sanitize_export_filename(raw: &str) -> String {
+    let base = raw
+        .rsplit(['/', '\\'])
+        .next()
+        .unwrap_or("peyywado_seed.json");
+    let stem = base.strip_suffix(".json").unwrap_or(base);
+    let mut clean: String = stem
+        .chars()
+        .map(|c| {
+            if c.is_ascii_alphanumeric() || c == '_' || c == '-' {
+                c
+            } else {
+                '_'
+            }
+        })
+        .collect();
+    while clean.contains("__") {
+        clean = clean.replace("__", "_");
+    }
+    let clean = clean.trim_matches(['_', '-']);
+    let stem_final = if clean.is_empty() { "peyywado_seed" } else { clean };
+    format!("{stem_final}.json")
+}
+
+#[tauri::command]
+fn vault_export_to_exe_dir(filename: String, content: String) -> Result<String, String> {
+    let exe_path = std::env::current_exe().map_err(|e| format!("EXE dizini bulunamadı: {e}"))?;
+    let exe_dir = exe_path
+        .parent()
+        .ok_or_else(|| "EXE üst dizini bulunamadı".to_string())?;
+    let safe_name = sanitize_export_filename(&filename);
+    let target = exe_dir.join(&safe_name);
+    fs::write(&target, content.as_bytes())
+        .map_err(|e| format!("Dosya yazılamadı ({}): {e}", target.display()))?;
+    Ok(target.to_string_lossy().to_string())
+}
+
 #[tauri::command]
 fn activate(otp_id: String, code: String, note: String, tag: Option<String>, color: Option<String>) -> Result<Account, String> {
     let d = otpcore::activate(&otp_id, &code, None, 10)?;
@@ -429,6 +466,14 @@ mod tests {
         let out = reorder_accounts(list, &["c".into(), "a".into()]);
         let ids: Vec<&str> = out.iter().map(|x| x.id.as_str()).collect();
         assert_eq!(ids, vec!["c", "a", "b"]);
+    }
+
+    #[test]
+    fn sanitize_export_filename_blocks_traversal() {
+        assert_eq!(sanitize_export_filename("../../evil.json"), "evil.json");
+        assert_eq!(sanitize_export_filename("Knight Ana_seed.json"), "Knight_Ana_seed.json");
+        assert_eq!(sanitize_export_filename("   "), "peyywado_seed.json");
+        assert_eq!(sanitize_export_filename("tum_hesaplar_seed"), "tum_hesaplar_seed.json");
     }
 }
 
@@ -746,6 +791,7 @@ fn main() {
             vault_reorder,
             vault_info,
             vault_export,
+            vault_export_to_exe_dir,
             activate,
             check_one,
             sync_time,

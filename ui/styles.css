@@ -2199,6 +2199,68 @@ dialog[open]:where(:not([data-closing]))::backdrop {
   height: 210px;
 }
 
+.transfer-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  padding: 9px 11px;
+  margin-bottom: 12px;
+  border-radius: var(--r-md);
+  background: rgba(249, 115, 22, 0.08);
+  border: 1px dashed rgba(249, 115, 22, 0.35);
+  font-size: 11.5px;
+  color: var(--tx2);
+}
+
+.transfer-row {
+  width: 100%;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  padding: 9px 11px;
+  border-radius: var(--r-md);
+  background: var(--bg-elev);
+  border: 1px solid var(--line);
+}
+
+.transfer-seed-col {
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+
+.transfer-lbl {
+  font-size: 9.5px;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  color: var(--tx3);
+}
+
+.transfer-seed {
+  font-size: 11.5px;
+  color: var(--tx1);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.transfer-row-btns {
+  display: flex;
+  gap: 6px;
+  flex-shrink: 0;
+}
+
+.transfer-hint {
+  margin: -4px 0 0;
+  font-size: 11px;
+  color: var(--tx3);
+  text-align: center;
+  line-height: 1.4;
+}
+
 .set-row {
   display: flex;
   align-items: center;
